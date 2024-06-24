@@ -3,6 +3,7 @@ import morgan from 'morgan';
 import cors from 'cors';
 import connectDB from './database.js';
 import comidaRoute from './routes/comida.route.js';
+import userRoute from './routes/usuario.route.js';
 
 connectDB();
 //se crea la constante con la funcionalidad de la base de datos
@@ -21,7 +22,8 @@ app.use(express.json());
 
 app.use(cors({origen:'*'}));
 
-app.use('/api', comidaRoute);
+app.use('/api/comida', comidaRoute);
+app.use('/api/usuario',userRoute);
 
 app.listen(app.get('Port'), ()=>{
   //console.log('Servidor escuchando por el puerto: ',app.get('Port'));
