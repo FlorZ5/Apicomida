@@ -1,57 +1,22 @@
-import { comidaModel } from '../models/comida.model.js';
-import jsonwebtoken from 'jsonwebtoken';
-import message from "../utils/messages.js";
-const {messageGeneral} = message;
+import jwt from 'jsonwebtoken';
 
-export const verificarToken = (req, res, next) => {
-  
-  if (!req.headers.authorization) {
-    return messageGeneral(
-      res,
-      401,
-      false,
-      null,
-      "No se encontró headers de authorization",
-    );
+export const authMiddleware = (req, res, next) => {
+  // Obtener el token del encabezado Authorization
+  const token = req.headers.authorization.split(" ")[1]; //Separa el Bearer del token y toma la primera posición.
+
+  // Verificar si hay token
+  if (!token) {
+    return res.status(401).json({ msg: 'Acceso denegado. No hay token válido.' });
   }
- 
-  const token = req.headers.authorization.split(" ")[1];
-  //se verifica si el token es nulo
-  if (!token){
-    return messageGeneral(
-      res,
-      401,
-      false,
-      null,
-      "You are not authorized to access this resource 2"
-    );
+
+  try {
+    // Verificar el token
+    const decoded = jwt.verify(token, 'secreta'); // Verifica el token con la misma clave secreta usada para firmarlo
+
+    // Agregar el usuario desde el token verificado
+    req.user = decoded;
+    next(); // Continuar con la ejecución de la ruta protegida
+  } catch (error) {
+    res.status(401).json({ msg: 'Token no válido.' });
   }
- 
-  jsonwebtoken.verify(token,"secreta",async(error,payload)=> {
-    //si error es true, si hay error
-    if (error) {
-      return messageGeneral(
-        res,
-        401,
-        false,
-        null,
-        "Error en el token",
-      );
-    }
-   
-    const { _id } = payload;
-    const resp = await UserModel.findById(_id);
-    if (!resp){
-      return messageGeneral(
-        res,
-        401,
-        false,
-        null,
-        "Error en el Id"
-      );
-    }
-    req.userid = _id;
-    //mandamos llamar a next para que contiúe con la función del controlador.
-    next();
-  });
 };

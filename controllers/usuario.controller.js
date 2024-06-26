@@ -33,12 +33,15 @@ userCtrl.login = async(req,res) =>{
 
     //reconvertir la contraseña encriptada para compararla
     const match = await bcrypt.compare(data.password, resp.password);
-    if (match){
-      //crear token
-      const token = jwt.sign({_id:resp._id},"secreta");
-      //imprime la respuesta, y oculta el pw para que no lo vean 
-      return messageGeneral(res,201,true,{...resp._doc,password:null,token},"Bienvenido!!!");
+
+
+    if (match) { //Si los valores coinciden generará el token y lo enviará
+      // Generar token JWT
+    const token = jwt.sign({_id:resp._id}, 'secreta', { expiresIn: '1h' }); // Puedes ajustar el tiempo de expiración según tus necesidades
+
+    return messageGeneral(res, 201, true, {...resp._doc, password:null, token}, "¡¡¡Bienvenido!!!"); // Enviar respuesta con el token y otros datos del usuario
     }
+
     messageGeneral(res,400,false,"","La contraseña es incorrecta!!!");
   } catch (error) {
     messageGeneral(res,500,false,"",error.message);
